@@ -24,8 +24,17 @@ spec:
             - -c
           args:
             - |
-              sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
-              exec apache2-foreground
+              set -e
+              cp -a /etc/apache2 /tmp/apache2
+              sed -i 's/Listen 80/Listen 8080/' /tmp/apache2/ports.conf
+              sed -i 's/:80>/:8080>/' /tmp/apache2/sites-available/000-default.conf
+              sed -i 's|^#ServerRoot.*|ServerRoot "/tmp/apache2"|' /tmp/apache2/apache2.conf
+              . /etc/apache2/envvars
+              export APACHE_RUN_USER="#$(id -u)" APACHE_RUN_GROUP="#$(id -g)"
+              mkdir -p /tmp/run /tmp/lock /tmp/logs
+              export APACHE_RUN_DIR=/tmp/run APACHE_PID_FILE=/tmp/run/apache2.pid
+              export APACHE_LOCK_DIR=/tmp/lock APACHE_LOG_DIR=/tmp/logs
+              exec apache2 -f /tmp/apache2/apache2.conf -D FOREGROUND
           readinessProbe:
             httpGet:
               path: /
