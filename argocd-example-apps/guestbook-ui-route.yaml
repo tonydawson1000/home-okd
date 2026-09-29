@@ -1,0 +1,17 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: guestbook-ui
+  labels:
+    app: guestbook-ui
+spec:
+  host: guestbook.apps.okd.homelab.local
+  to:
+    kind: Service
+    name: guestbook-ui
+    weight: 100
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
